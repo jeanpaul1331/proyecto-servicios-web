@@ -1,35 +1,73 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import React, { useState, useEffect, useContext, createContext } from 'react';
+
+<div style={{ backgroundImage: " url public\imagenesurl(/image.png)" }}>
+  cronometro
+</div>
+
+// Creación del Contexto
+const StopwatchContext = createContext();
+
+function StopwatchProvider({ children }) {
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    let interval;
+    if (isRunning) {
+      interval = setInterval(() => {
+        setTime(prevTime => prevTime + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning]);
+
+  const start = () => setIsRunning(true);
+  const stop = () => setIsRunning(false);
+  const reset = () => {
+    setIsRunning(false);
+    setTime(0);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <StopwatchContext.Provider value={{ time, start, stop, reset }}>
+      {children}
+    </StopwatchContext.Provider>
+  );
 }
 
-export default App
+function Stopwatch() {
+  const { time } = useContext(StopwatchContext);
+
+  return (
+    <div>
+      <h1>Cronómetro</h1>
+      <h2>{new Date(time * 1000).toISOString().substr(11, 8)}</h2>
+    </div>
+  );
+}
+
+function Controls() {
+  const { start, stop, reset } = useContext(StopwatchContext);
+
+  return (
+    <div>
+      <button onClick={start}>Iniciar</button>
+      <button onClick={stop}>Detener</button>
+      <button onClick={reset}>Reiniciar</button>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <StopwatchProvider>
+      <div>
+        <Stopwatch />
+        <Controls />
+      </div>
+    </StopwatchProvider>
+  );
+}
+
+export default App;
